@@ -15,6 +15,9 @@ from .image_widget import ImageWidget
 
 import main_window_ui
 
+# TARGET_CONTENT = 'KOBACO'
+TARGET_CONTENT = 'NIA'
+
 
 class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
     def __init__(self):
@@ -37,7 +40,7 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         self.content_type = "object"
 
         self.names_dir = os.path.abspath("names")
-        self.names_file = os.path.join(self.names_dir, "kobaco-object-hangul.names")
+        self.names_file = os.path.join(self.names_dir, TARGET_CONTENT.lower() + "-object-hangul.names")
         self.name_list = []
 
         self.color_change = []
@@ -63,9 +66,9 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         self.objectRadioButton.setChecked(True)
         self.faceRadioButton.clicked.connect(lambda: self.radio_button_action("face"))
         # self.ageGenderRadioButton.clicked.connect(lambda: self.radio_button_action("age-gender"))
-        self.brandRadioButton.clicked.connect(lambda: self.radio_button_action("brand"))
+        # self.brandRadioButton.clicked.connect(lambda: self.radio_button_action("brand"))
         self.sceneRadioButton.clicked.connect(lambda: self.radio_button_action("scene"))
-        self.landmarkRadioButton.clicked.connect(lambda: self.radio_button_action("landmark"))
+        # self.landmarkRadioButton.clicked.connect(lambda: self.radio_button_action("landmark"))
         self.nameDialogButton.clicked.connect(self.name_dialog_button_action)
         self.currentPageEdit.returnPressed.connect(self.current_page_action)
         self.fileList.selectionChanged = self.file_selection_changed
@@ -376,11 +379,13 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         self.content_type = str(content_type)
 
         if content_type == "object":
-            self.names_file = os.path.join(self.names_dir, "kobaco-object-hangul.names")
+            self.names_file = os.path.join(self.names_dir, TARGET_CONTENT.lower() + "-object-hangul.names")
         elif content_type == "face":
-            self.names_file = os.path.join(self.names_dir, "kobaco-face-hangul.names")
+            self.names_file = os.path.join(self.names_dir, TARGET_CONTENT.lower() + "-face-hangul.names")
         elif content_type == "brand":
-            self.names_file = os.path.join(self.names_dir, "kobaco-brand-hangul.names")
+            self.names_file = os.path.join(self.names_dir, TARGET_CONTENT.lower() + "-brand-hangul.names")
+        elif content_type == "scene":
+            self.names_file = os.path.join(self.names_dir, TARGET_CONTENT.lower() + "-scene-hangul.names")
         else:
             self.names_file = os.path.join(self.names_dir, "idle.names")
 
@@ -390,9 +395,11 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         with open(self.names_file, 'r', encoding='utf-8') as c:
             names_strings = c.read()
         for one_line in names_strings.split('\n'):
-            splits = one_line.split(',')
+            splits = one_line.split(', ')
             if len(splits) == 2:
                 self.name_list.append(str(splits[1].strip()))
+            else:
+                self.name_list.append(str(splits[-1].strip()))
 
         print(" # Content type is {} ({})".format(self.content_type, self.names_file))
 
