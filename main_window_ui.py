@@ -129,7 +129,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Labeling Tool"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "VCR 레이블링툴"))
         self.prevPageButton.setText(_translate("MainWindow", "..."))
         self.totalPageLabel.setText(_translate("MainWindow", "/ 0"))
         self.nextPageButton.setText(_translate("MainWindow", "..."))
@@ -138,18 +138,18 @@ class Ui_MainWindow(object):
         # self.brandRadioButton.setText(_translate("MainWindow", "브랜드"))
         self.sceneRadioButton.setText(_translate("MainWindow", "장소"))
         # self.landmarkRadioButton.setText(_translate("MainWindow", "랜드마크"))
-        self.nameDialogButton.setText(_translate("MainWindow", "Edit ID"))
-        self.menuFile.setTitle(_translate("MainWindow", "File"))
-        self.menuEdit.setTitle(_translate("MainWindow", "Edit"))
-        self.loadAction.setText(_translate("MainWindow", "Load"))
+        self.nameDialogButton.setText(_translate("MainWindow", "이름 수정"))
+        self.menuFile.setTitle(_translate("MainWindow", "파일"))
+        self.menuEdit.setTitle(_translate("MainWindow", "수정"))
+        self.loadAction.setText(_translate("MainWindow", "불러오기"))
         self.loadAction.setShortcut(_translate("MainWindow", "Ctrl+O"))
-        self.saveAction.setText(_translate("MainWindow", "Save"))
+        self.saveAction.setText(_translate("MainWindow", "저장하기"))
         self.saveAction.setShortcut(_translate("MainWindow", "Ctrl+S"))
-        self.deleteAction.setText(_translate("MainWindow", "Delete Current Box"))
+        self.deleteAction.setText(_translate("MainWindow", "선택한 박스 삭제"))
         self.deleteAction.setShortcut(_translate("MainWindow", "Ctrl+D"))
-        self.newBoxAction.setText(_translate("MainWindow", "New Box"))
+        self.newBoxAction.setText(_translate("MainWindow", "새 박스 생성"))
         self.newBoxAction.setShortcut(_translate("MainWindow", "Ctrl+N"))
-        self.entireImageAction.setText(_translate("MainWindow", "Entire Image"))
+        self.entireImageAction.setText(_translate("MainWindow", "전체 이미지 박스 생성"))
         self.entireImageAction.setShortcut(_translate("MainWindow", "Ctrl+E"))
 
 

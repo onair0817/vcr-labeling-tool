@@ -16,8 +16,6 @@ class NameDialog(QDialog, name_dialog_ui.Ui_Dialog):
         self.idList.selectionChanged = self.selection_changed
         self.idFilter.textChanged.connect(self.text_changed)
 
-        # with open('id_cand_list.txt', 'r') as file:  # TODO don't hardcode list path
-        #     self.items = file.read().splitlines()
         print(self.parent.name_list)
 
         self.items = self.parent.name_list

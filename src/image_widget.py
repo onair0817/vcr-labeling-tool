@@ -99,7 +99,7 @@ class ImageWidget(QtWidgets.QLabel):
                 painter.setPen(QtGui.QPen(Qt.red, 3))
                 painter.setBrush(QtGui.QBrush(Qt.red))
 
-                # Draw bounding box
+            # Draw bounding box
             painter.setBrush(Qt.NoBrush)  # No fill
             painter.drawPolygon(self.bbox_to_polygon(bbox))
 
