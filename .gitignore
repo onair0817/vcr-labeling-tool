@@ -142,3 +142,5 @@ cython_debug/
 .idea/
 .vscode/
 .DS_Store
+samples/**
+names/**
