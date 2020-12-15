@@ -6,8 +6,9 @@ import sys
 import codecs
 import shutil
 import cv2
-from PyQt5 import QtGui, uic
-from PyQt5.QtWidgets import QFileDialog, QMainWindow, QAbstractItemView, QRadioButton
+
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 from .name_dialog import NameDialog
 from .point import Point
@@ -234,25 +235,22 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         else:
             self.img_json = json.load(codecs.open(self.json_files[self.json_file_idx], 'r', 'utf-8-sig'))
 
-        # self.img_ids = self.img_json['object_info']['face']['result']['ids']
-        # self.img_width = self.img_json['image_info']['attributes']['image_width']
-        # self.img_height = self.img_json['image_info']['attributes']['image_height']
-
         if self.content_type:
+            if self.img_json['content'][self.content_type]['annotation']['bboxes']:
+                self.img_names = self.img_json['content'][self.content_type]['annotation']['names']
+                self.img_names_scores = self.img_json['content'][self.content_type]['annotation']['scores']
+                self.img_width = self.img_json['image']['attributes']['width']
+                self.img_height = self.img_json['image']['attributes']['height']
+            else:
+                self.img_json['content'][self.content_type]['annotation']['bboxes'] = []
+                self.img_names = []
+                self.img_names_scores = []
+                self.img_width = self.img_json['image']['attributes']['width']
+                self.img_height = self.img_json['image']['attributes']['height']
+
+            # bbox가 있는 경우
             if 'bboxes' in self.img_json['content'][self.content_type]['annotation']:
                 # TODO 약간 inference 결과가 이상해 임시방편으로 해결해둔 것
-                if self.img_json['content'][self.content_type]['annotation']['bboxes']:
-                    self.img_names = self.img_json['content'][self.content_type]['annotation']['names']
-                    self.img_names_scores = self.img_json['content'][self.content_type]['annotation']['scores']
-                    self.img_width = self.img_json['image']['attributes']['width']
-                    self.img_height = self.img_json['image']['attributes']['height']
-                else:
-                    self.img_json['content'][self.content_type]['annotation']['bboxes'] = []
-                    self.img_names = []
-                    self.img_names_scores = []
-                    self.img_width = self.img_json['image']['attributes']['width']
-                    self.img_height = self.img_json['image']['attributes']['height']
-
                 # Turn JSON list into list of Points
                 self.img_bboxes = list(map(lambda a: [
                     Point(self.img_width * a[0], self.img_height * a[1]),
@@ -265,6 +263,11 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
 
                 self.img_bbox_idx = 0
                 self.update_name_list_ui()
+            # Scene 과 같이 bbox 가 없을 때의 처리 방법
+            elif self.content_type == 'scene':
+                self.img_bboxes = []
+                self.img_bbox_idx = 0
+                self.update_file_list_ui()
 
     def update_ui(self):
         """Update all ui elements except lists."""
@@ -274,14 +277,15 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         self.statusLabel.clear()
 
         # Update image
-        pix_map_image = QtGui.QPixmap(self.img_file)
+        pix_map_image = QPixmap(self.img_file)
+
         self.imgWidget.setPixmap(pix_map_image)
         self.imgWidget.setScaledContents(True)
 
         # Update page selection
         self.currentPageEdit.setText(str(self.json_file_idx + 1))
         self.currentPageEdit.setValidator(
-            QtGui.QIntValidator(1, len(self.json_files), self))
+            QIntValidator(1, len(self.json_files), self))
         self.totalPageLabel.setText(f"/ {len(self.json_files)}")
 
         # Update list selections
@@ -293,17 +297,17 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
 
     def update_file_list_ui(self):
         """Update model for file list."""
-        model = QtGui.QStandardItemModel()
+        model = QStandardItemModel()
         for json_file in self.json_files:
-            model.appendRow(QtGui.QStandardItem(os.path.basename(json_file)))
+            model.appendRow(QStandardItem(os.path.basename(json_file)))
 
         self.fileList.setModel(model)
 
     def update_name_list_ui(self):
         """Update model for text list."""
-        model = QtGui.QStandardItemModel()
+        model = QStandardItemModel()
         for name in self.img_names:
-            model.appendRow(QtGui.QStandardItem(str(name)))
+            model.appendRow(QStandardItem(str(name)))
 
         self.idList.setModel(model)
 
