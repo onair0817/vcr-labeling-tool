@@ -11,8 +11,7 @@ This provides a convenient GUI for non-tech users to draw bounding boxes around 
 5) Delete unnecessary bounding boxes
 6) Read/write image information from the json file
 
-### Requirements
-- Python virtual environment e.g. Anaconda
-> [Method 1] `conda env create -f environment.yml`
-
-> [Method 2] `pip install -r requirements.txt`
+### Environment setup
+- Python 3.6 or above
+- Anaconda
+  - `pip install -r requirements.txt`
