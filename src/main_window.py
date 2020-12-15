@@ -55,6 +55,11 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         self.fileList.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.idList.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
+        # Initial settings
+        self.objectRadioButton.setChecked(True)
+        self.radio_button_action("object")
+
+        # Connections
         self.loadAction.triggered.connect(self.load_action)
         self.saveAction.triggered.connect(self.save_action)
         self.deleteAction.triggered.connect(self.delete_action)
@@ -63,7 +68,6 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         self.prevPageButton.clicked.connect(self.prev_button_action)
         self.nextPageButton.clicked.connect(self.next_button_action)
         self.objectRadioButton.clicked.connect(lambda: self.radio_button_action("object"))
-        self.objectRadioButton.setChecked(True)
         self.faceRadioButton.clicked.connect(lambda: self.radio_button_action("face"))
         # self.ageGenderRadioButton.clicked.connect(lambda: self.radio_button_action("age-gender"))
         # self.brandRadioButton.clicked.connect(lambda: self.radio_button_action("brand"))
@@ -116,54 +120,6 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
             cv2_img_height = cv2_img.shape[0]
 
             # img_size = os.path.getsize(self.img_files[self.img_file_idx])
-
-            """
-            self.img_json = {
-                "dataset_info": {
-                    "description": ".",
-                    "dataset_version": "1.0",
-                    "dateset_created": "",
-                    "attributes": {
-                        "image_augmented": "",
-                        "answer_refined": ""
-                    },
-                    "dataset_created": ""
-                },
-                "image_info": {
-                    "image_name": file_root,
-                    "attributes": {
-                        "color": 3,
-                        "image_size": img_size,
-                        "image_width": cv2_img_width,
-                        "image_height": cv2_img_height,
-                        "image_path": self.img_file
-                    }
-                },
-                "object_info": {
-                    "face": {
-                        "algorithm": {
-                            "face_detect_algorithm": "",
-                            "face_recog_algorithm": "",
-                            "face_age_gender_algorithm": "",
-                            "face_detect_model": "",
-                            "face_recog_model": "",
-                            "face_age_gender_model": ""
-                        },
-                        "result": {
-                            "bboxes": [],
-                            "embeddings": [],
-                            "ids": [],
-                            "ages": [],
-                            "genders": []
-                        }
-                    },
-                    "face_detect_algorithm": "",
-                    "face_recog_algorithm": "",
-                    "face_detect_model": "",
-                    "face_recog_model": "",
-                }
-            }
-            """
 
             self.img_json = {
                 "dataset": {
@@ -310,7 +266,6 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
                 self.img_bbox_idx = 0
                 self.update_name_list_ui()
 
-
     def update_ui(self):
         """Update all ui elements except lists."""
         if not self.json_files:
@@ -380,14 +335,28 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
 
         if content_type == "object":
             self.names_file = os.path.join(self.names_dir, TARGET_CONTENT.lower() + "-object-hangul.names")
+            self.newBoxAction.setEnabled(True)
+            self.entireImageAction.setEnabled(True)
         elif content_type == "face":
             self.names_file = os.path.join(self.names_dir, TARGET_CONTENT.lower() + "-face-hangul.names")
+            self.newBoxAction.setEnabled(True)
+            self.entireImageAction.setEnabled(True)
         elif content_type == "brand":
             self.names_file = os.path.join(self.names_dir, TARGET_CONTENT.lower() + "-brand-hangul.names")
+            self.newBoxAction.setEnabled(True)
+            self.entireImageAction.setEnabled(True)
         elif content_type == "scene":
             self.names_file = os.path.join(self.names_dir, TARGET_CONTENT.lower() + "-scene-hangul.names")
+            self.newBoxAction.setEnabled(False)
+            self.entireImageAction.setEnabled(False)
+        elif content_type == "landmark":
+            self.names_file = os.path.join(self.names_dir, TARGET_CONTENT.lower() + "-landmark-hangul.names")
+            self.newBoxAction.setEnabled(True)
+            self.entireImageAction.setEnabled(True)
         else:
             self.names_file = os.path.join(self.names_dir, "idle.names")
+            self.newBoxAction.setEnabled(False)
+            self.entireImageAction.setEnabled(False)
 
         # Not in list
         self.name_list = []
@@ -395,7 +364,7 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         with open(self.names_file, 'r', encoding='utf-8') as c:
             names_strings = c.read()
         for one_line in names_strings.split('\n'):
-            splits = one_line.split(', ')
+            splits = one_line.split(',')
             if len(splits) == 2:
                 self.name_list.append(str(splits[1].strip()))
             else:
@@ -451,13 +420,14 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
             self.statusLabel.setText("Invalid Text")
 
     def delete_action(self):
-        """Delete current selected bbox."""
-        del self.img_bboxes[self.img_bbox_idx]
-        del self.img_names[self.img_bbox_idx]
-        del self.img_names_scores[self.img_bbox_idx]
+        if len(self.img_bboxes) > 0:
+            """Delete current selected bbox."""
+            del self.img_bboxes[self.img_bbox_idx]
+            del self.img_names[self.img_bbox_idx]
+            del self.img_names_scores[self.img_bbox_idx]
 
-        if self.img_bbox_idx == len(self.img_bboxes):
-            self.img_bbox_idx -= 1
+            if self.img_bbox_idx == len(self.img_bboxes):
+                self.img_bbox_idx -= 1
 
         self.update_name_list_ui()
         self.update_ui()
