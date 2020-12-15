@@ -37,7 +37,7 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         self.content_type = "object"
 
         self.names_dir = os.path.abspath("names")
-        self.names_file = os.path.join(self.names_dir, "coco-stuff-hangul.names")
+        self.names_file = os.path.join(self.names_dir, "kobaco-object-hangul.names")
         self.name_list = []
 
         self.color_change = []
@@ -376,7 +376,7 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         self.content_type = str(content_type)
 
         if content_type == "object":
-            self.names_file = os.path.join(self.names_dir, "coco-stuff-hangul.names")
+            self.names_file = os.path.join(self.names_dir, "kobaco-object-hangul.names")
         elif content_type == "face":
             self.names_file = os.path.join(self.names_dir, "kobaco-face-hangul.names")
         elif content_type == "brand":
