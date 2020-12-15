@@ -15,3 +15,5 @@ This provides a convenient GUI for non-tech users to draw bounding boxes around 
 - Python 3.6 or above
 - Anaconda
   - `pip install -r requirements.txt`
+  - `conda install -c conda-forge opencv=4.4`
+  
