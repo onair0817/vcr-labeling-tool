@@ -35,7 +35,7 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         self.img_width = 0  # Current selected image width
         self.img_bboxes = []  # Current selected image bboxes
         self.img_names = []  # Current selected image bbox names
-        self.img_names_scores = []
+        self.img_names_scores = [] # Current selected image bbox names' scores
         self.img_bbox_idx = None  # Current selected image - selected box
 
         self.content_type = "object"
@@ -54,7 +54,7 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
 
         # Make list items non-editable
         self.fileList.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.idList.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.nameList.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         # Initial settings
         self.objectRadioButton.setChecked(True)
@@ -63,8 +63,10 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         # Connections
         self.loadAction.triggered.connect(self.load_action)
         self.saveAction.triggered.connect(self.save_action)
-        self.deleteAction.triggered.connect(self.delete_action)
+        self.newSceneAction.triggered.connect(self.new_scene_action)
         self.newBoxAction.triggered.connect(self.new_box_action)
+        self.deleteBoxAction.triggered.connect(self.delete_box_action)
+        self.deleteSceneAction.triggered.connect(self.delete_scene_action)
         self.entireImageAction.triggered.connect(self.entire_image_action)
         self.prevPageButton.clicked.connect(self.prev_button_action)
         self.nextPageButton.clicked.connect(self.next_button_action)
@@ -77,7 +79,7 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         self.nameDialogButton.clicked.connect(self.name_dialog_button_action)
         self.currentPageEdit.returnPressed.connect(self.current_page_action)
         self.fileList.selectionChanged = self.file_selection_changed
-        self.idList.selectionChanged = self.name_selection_changed
+        self.nameList.selectionChanged = self.name_selection_changed
 
     def load_action(self):
         """Open file dialog and get directory of json files."""
@@ -236,21 +238,20 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
             self.img_json = json.load(codecs.open(self.json_files[self.json_file_idx], 'r', 'utf-8-sig'))
 
         if self.content_type:
-            if self.img_json['content'][self.content_type]['annotation']['bboxes']:
-                self.img_names = self.img_json['content'][self.content_type]['annotation']['names']
-                self.img_names_scores = self.img_json['content'][self.content_type]['annotation']['scores']
-                self.img_width = self.img_json['image']['attributes']['width']
-                self.img_height = self.img_json['image']['attributes']['height']
-            else:
-                self.img_json['content'][self.content_type]['annotation']['bboxes'] = []
-                self.img_names = []
-                self.img_names_scores = []
-                self.img_width = self.img_json['image']['attributes']['width']
-                self.img_height = self.img_json['image']['attributes']['height']
-
             # bbox가 있는 경우
             if 'bboxes' in self.img_json['content'][self.content_type]['annotation']:
-                # TODO 약간 inference 결과가 이상해 임시방편으로 해결해둔 것
+                if self.img_json['content'][self.content_type]['annotation']['bboxes']:
+                    self.img_names = self.img_json['content'][self.content_type]['annotation']['names']
+                    self.img_names_scores = self.img_json['content'][self.content_type]['annotation']['scores']
+                    self.img_width = self.img_json['image']['attributes']['width']
+                    self.img_height = self.img_json['image']['attributes']['height']
+                else:
+                    self.img_json['content'][self.content_type]['annotation']['bboxes'] = []
+                    self.img_names = []
+                    self.img_names_scores = []
+                    self.img_width = self.img_json['image']['attributes']['width']
+                    self.img_height = self.img_json['image']['attributes']['height']
+
                 # Turn JSON list into list of Points
                 self.img_bboxes = list(map(lambda a: [
                     Point(self.img_width * a[0], self.img_height * a[1]),
@@ -263,11 +264,25 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
 
                 self.img_bbox_idx = 0
                 self.update_name_list_ui()
+
             # Scene 과 같이 bbox 가 없을 때의 처리 방법
             elif self.content_type == 'scene':
+                self.img_names = self.img_json['content'][self.content_type]['annotation']['names']
+                self.img_names_scores = self.img_json['content'][self.content_type]['annotation']['scores']
+                self.img_width = self.img_json['image']['attributes']['width']
+                self.img_height = self.img_json['image']['attributes']['height']
                 self.img_bboxes = []
                 self.img_bbox_idx = 0
-                self.update_file_list_ui()
+
+                idx_to_be_removed = []
+                for idx in range(len(self.img_names)):
+                    if self.img_names_scores[idx] < 0.3:
+                        idx_to_be_removed.append(idx)
+
+                self.img_names = [i for j, i in enumerate(self.img_names) if j not in idx_to_be_removed]
+                self.img_names_scores = [i for j, i in enumerate(self.img_names_scores) if j not in idx_to_be_removed]
+
+                self.update_name_list_ui()
 
     def update_ui(self):
         """Update all ui elements except lists."""
@@ -292,8 +307,8 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         self.fileList.setCurrentIndex(
             self.fileList.model().createIndex(self.json_file_idx if self.json_file_idx else 0, 0))
 
-        self.idList.setCurrentIndex(
-            self.idList.model().createIndex(self.img_bbox_idx if self.img_bbox_idx else 0, 0))
+        self.nameList.setCurrentIndex(
+            self.nameList.model().createIndex(self.img_bbox_idx if self.img_bbox_idx else 0, 0))
 
     def update_file_list_ui(self):
         """Update model for file list."""
@@ -309,9 +324,13 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         for name in self.img_names:
             model.appendRow(QStandardItem(str(name)))
 
-        self.idList.setModel(model)
+        self.nameList.setModel(model)
 
     def prev_button_action(self):
+        """Update all ui elements except lists."""
+        if not self.json_files:
+            return
+
         """Go to previous image, do nothing if already at beginning."""
         if self.json_file_idx > 0:
             self.save_action()
@@ -320,6 +339,10 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
             self.update_ui()
 
     def next_button_action(self):
+        """Update all ui elements except lists."""
+        if not self.json_files:
+            return
+
         """Go to next image, do nothing if already at end."""
         if self.json_file_idx < len(self.json_files) - 1:
             self.save_action()
@@ -340,27 +363,45 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         if content_type == "object":
             self.names_file = os.path.join(self.names_dir, TARGET_CONTENT.lower() + "-object-hangul.names")
             self.newBoxAction.setEnabled(True)
+            self.deleteBoxAction.setEnabled(True)
             self.entireImageAction.setEnabled(True)
+            self.newSceneAction.setEnabled(False)
+            self.deleteSceneAction.setEnabled(False)
         elif content_type == "face":
             self.names_file = os.path.join(self.names_dir, TARGET_CONTENT.lower() + "-face-hangul.names")
             self.newBoxAction.setEnabled(True)
+            self.deleteBoxAction.setEnabled(True)
             self.entireImageAction.setEnabled(True)
+            self.newSceneAction.setEnabled(False)
+            self.deleteSceneAction.setEnabled(False)
         elif content_type == "brand":
             self.names_file = os.path.join(self.names_dir, TARGET_CONTENT.lower() + "-brand-hangul.names")
             self.newBoxAction.setEnabled(True)
+            self.deleteBoxAction.setEnabled(True)
             self.entireImageAction.setEnabled(True)
+            self.newSceneAction.setEnabled(False)
+            self.deleteSceneAction.setEnabled(False)
         elif content_type == "scene":
             self.names_file = os.path.join(self.names_dir, TARGET_CONTENT.lower() + "-scene-hangul.names")
             self.newBoxAction.setEnabled(False)
+            self.deleteBoxAction.setEnabled(False)
             self.entireImageAction.setEnabled(False)
+            self.newSceneAction.setEnabled(True)
+            self.deleteSceneAction.setEnabled(True)
         elif content_type == "landmark":
             self.names_file = os.path.join(self.names_dir, TARGET_CONTENT.lower() + "-landmark-hangul.names")
             self.newBoxAction.setEnabled(True)
+            self.deleteBoxAction.setEnabled(True)
             self.entireImageAction.setEnabled(True)
+            self.newSceneAction.setEnabled(False)
+            self.deleteSceneAction.setEnabled(False)
         else:
             self.names_file = os.path.join(self.names_dir, "idle.names")
             self.newBoxAction.setEnabled(False)
+            self.deleteBoxAction.setEnabled(False)
             self.entireImageAction.setEnabled(False)
+            self.newSceneAction.setEnabled(False)
+            self.deleteSceneAction.setEnabled(False)
 
         # Not in list
         self.name_list = []
@@ -387,6 +428,10 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
             self.statusLabel.setText("No Box available")
 
     def save_action(self):
+        """Update all ui elements except lists."""
+        if not self.json_files:
+            return
+
         """Save data back to json file."""
         try:
             # check if the input can be converted to int
@@ -398,20 +443,22 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
             self.img_json['content'][self.content_type]['annotation']['scores'] = self.img_names_scores
 
             # Turn list of Points back into JSON list
-            self.img_json['content'][self.content_type]['annotation']['bboxes'] = []
-            for idx1, bbox in enumerate(self.img_bboxes):
-                self.img_json['content'][self.content_type]['annotation']['bboxes'].append([0, 0, 0, 0])
-                for idx2, p in enumerate(bbox):
-                    if idx2 == 0:
-                        self.img_json['content'][self.content_type]['annotation']['bboxes'][idx1][0] = \
-                            p.x / self.img_width
-                        self.img_json['content'][self.content_type]['annotation']['bboxes'][idx1][1] = \
-                            p.y / self.img_height
-                    if idx2 == 2:
-                        self.img_json['content'][self.content_type]['annotation']['bboxes'][idx1][2] = \
-                            p.x / self.img_width
-                        self.img_json['content'][self.content_type]['annotation']['bboxes'][idx1][3] = \
-                            p.y / self.img_height
+            # TODO scene일 때는 bboxes key 값 수정 자체를 막음
+            if self.content_type != 'scene':
+                self.img_json['content'][self.content_type]['annotation']['bboxes'] = []
+                for idx1, bbox in enumerate(self.img_bboxes):
+                    self.img_json['content'][self.content_type]['annotation']['bboxes'].append([0, 0, 0, 0])
+                    for idx2, p in enumerate(bbox):
+                        if idx2 == 0:
+                            self.img_json['content'][self.content_type]['annotation']['bboxes'][idx1][0] = \
+                                p.x / self.img_width
+                            self.img_json['content'][self.content_type]['annotation']['bboxes'][idx1][1] = \
+                                p.y / self.img_height
+                        if idx2 == 2:
+                            self.img_json['content'][self.content_type]['annotation']['bboxes'][idx1][2] = \
+                                p.x / self.img_width
+                            self.img_json['content'][self.content_type]['annotation']['bboxes'][idx1][3] = \
+                                p.y / self.img_height
 
             original_file = f"{self.json_files[self.json_file_idx]}~"
             shutil.copy2(self.json_files[self.json_file_idx], original_file)
@@ -423,7 +470,35 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         except IndexError:
             self.statusLabel.setText("Invalid Text")
 
-    def delete_action(self):
+    def new_box_action(self):
+        """Update all ui elements except lists."""
+        if not self.json_files:
+            return
+
+        """Add a new box with default size and text."""
+        self.img_bboxes.append([Point(0, 0), Point(100, 0), Point(100, 100), Point(0, 100)])
+        self.img_names.append("새 이름")
+        self.img_names_scores.append(1.0)
+
+        self.update_name_list_ui()
+        self.update_ui()
+
+    def new_scene_action(self):
+        """Update all ui elements except lists."""
+        if not self.json_files:
+            return
+
+        self.img_names.append("새 장면")
+        self.img_names_scores.append(1.0)
+
+        self.update_name_list_ui()
+        self.update_ui()
+
+    def delete_box_action(self):
+        """Update all ui elements except lists."""
+        if not self.json_files:
+            return
+
         if len(self.img_bboxes) > 0:
             """Delete current selected bbox."""
             del self.img_bboxes[self.img_bbox_idx]
@@ -436,16 +511,26 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         self.update_name_list_ui()
         self.update_ui()
 
-    def new_box_action(self):
-        """Add a new box with default size and text."""
-        self.img_bboxes.append([Point(0, 0), Point(100, 0), Point(100, 100), Point(0, 100)])
-        self.img_names.append("--추가해주세요--")
-        self.img_names_scores.append(1.0)
+    def delete_scene_action(self):
+        """Update all ui elements except lists."""
+        if not self.json_files:
+            return
+
+        if len(self.img_names) > 0:
+            del self.img_names[self.img_bbox_idx]
+            del self.img_names_scores[self.img_bbox_idx]
+
+            if self.img_bbox_idx == len(self.img_bboxes):
+                self.img_bbox_idx -= 1
 
         self.update_name_list_ui()
         self.update_ui()
 
     def entire_image_action(self):
+        """Update all ui elements except lists."""
+        if not self.json_files:
+            return
+
         """Change current bbox to cover entire image."""
         try:
             self.img_bboxes[self.img_bbox_idx] = [

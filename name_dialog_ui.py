@@ -17,12 +17,12 @@ class Ui_Dialog(object):
         Dialog.resize(200, 300)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(Dialog)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.idFilter = QtWidgets.QLineEdit(Dialog)
-        self.idFilter.setObjectName("idFilter")
-        self.verticalLayout_2.addWidget(self.idFilter)
-        self.idList = QtWidgets.QListView(Dialog)
-        self.idList.setObjectName("idList")
-        self.verticalLayout_2.addWidget(self.idList)
+        self.nameFilter = QtWidgets.QLineEdit(Dialog)
+        self.nameFilter.setObjectName("nameFilter")
+        self.verticalLayout_2.addWidget(self.nameFilter)
+        self.nameList = QtWidgets.QListView(Dialog)
+        self.nameList.setObjectName("nameList")
+        self.verticalLayout_2.addWidget(self.nameList)
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -30,7 +30,7 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Edit Name"))
-        self.idFilter.setPlaceholderText(_translate("Dialog", "Filter"))
+        self.nameFilter.setPlaceholderText(_translate("Dialog", "Filter"))
 
 
 if __name__ == "__main__":
