@@ -358,6 +358,7 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
             self.update_ui()
 
     def radio_button_action(self, content_type):
+        self.save_action()
         self.content_type = str(content_type)
 
         if content_type == "object":
@@ -466,9 +467,9 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
             with open(self.json_files[self.json_file_idx], 'w', encoding='utf-8') as json_file:
                 json.dump(self.img_json, json_file, ensure_ascii=False, indent=4)
 
-            self.statusLabel.setText("Saved!")
+            self.statusLabel.setText("저장 완료!")
         except IndexError:
-            self.statusLabel.setText("Invalid Text")
+            self.statusLabel.setText("잘못된 정보입니다!")
 
     def new_box_action(self):
         """Update all ui elements except lists."""
@@ -556,7 +557,7 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         self.update_ui()
 
     def name_selection_changed(self, selected, _):
-        """Get new id selection and update UI."""
+        """Get new name selection and update UI."""
         indexes = selected.indexes()
         if len(indexes) <= 0:
             return
