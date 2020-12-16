@@ -1,7 +1,7 @@
 # Labeling Tool for VCR
 > Labeling tool for video content recognition based on deep learning
 
-This provides a convenient GUI for non-tech users to draw bounding boxes around faces in the image.
+This provides a convenient GUI for non-tech users to draw bounding boxes around targets in the image.
 
 ### Functions
 1) Load image folder for labeling
