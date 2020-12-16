@@ -21,16 +21,17 @@ class Ui_Dialog(object):
         self.nameFilter.setObjectName("nameFilter")
         self.verticalLayout_2.addWidget(self.nameFilter)
         self.nameList = QtWidgets.QListView(Dialog)
+        self.nameList.doubleClicked.connect(Dialog.close)
         self.nameList.setObjectName("nameList")
         self.verticalLayout_2.addWidget(self.nameList)
-
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Edit Name"))
+        Dialog.setWindowTitle(_translate("Dialog", "이름 수정하기"))
         self.nameFilter.setPlaceholderText(_translate("Dialog", "Filter"))
+
 
 
 if __name__ == "__main__":

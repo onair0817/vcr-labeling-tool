@@ -12,7 +12,7 @@ This provides a convenient GUI for non-tech users to draw bounding boxes around 
 6) Read/write image information from the json file
 
 ### Environment setup
-- Python 3.6 or above
+- Python 3.6 or above (3.8 recommended)
 - Anaconda
   - `pip install -r requirements.txt`
   - `conda install -c conda-forge opencv=4.4`
