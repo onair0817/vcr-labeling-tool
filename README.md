@@ -3,7 +3,7 @@
 
 This provides a convenient GUI for non-tech users to draw bounding boxes around targets in the image.
 
-### Functions
+## Functions
 1) Load image folder for labeling
 2) Select content type of labeling
 3) Adjust size of the bounding boxes
@@ -11,9 +11,17 @@ This provides a convenient GUI for non-tech users to draw bounding boxes around 
 5) Delete unnecessary bounding boxes
 6) Read/write image information from the json file
 
-### Environment setup
-- Python 3.6 or above (3.8 recommended)
-- Anaconda
+## Environment setup
+
+#### Installation
+
+- Anaconda latest version
+  - python 3.6 or above 
+- Python packages
   - `pip install -r requirements.txt`
-  - `conda install -c conda-forge opencv=4.4`
+
+#### Creating an executable file for Windows OS
+
+- Pyinstaller latest version
+  - `pyinstaller -w -F vcr_labeling.py`
   

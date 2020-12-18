@@ -16,6 +16,7 @@ from .image_widget import ImageWidget
 
 import main_window_ui
 
+IMG_EXTENSIONS = ['jpg', 'jpeg', 'png', 'bmp', 'gif', 'tif', 'tiff']
 # TARGET_CONTENT = 'KOBACO'
 TARGET_CONTENT = 'NIA'
 
@@ -34,8 +35,9 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         self.img_height = 0  # Current selected image height
         self.img_width = 0  # Current selected image width
         self.img_bboxes = []  # Current selected image bboxes
+        self.img_ids = []  # Current selected image ids
         self.img_names = []  # Current selected image bbox names
-        self.img_names_scores = [] # Current selected image bbox names' scores
+        self.img_names_scores = []  # Current selected image bbox names' scores
         self.img_bbox_idx = None  # Current selected image - selected box
 
         self.content_type = "object"
@@ -83,12 +85,10 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
 
     def load_action(self):
         """Open file dialog and get directory of json files."""
-        dir_name = QFileDialog.getExistingDirectory(self)
-        self.json_files = self.get_filenames(dir_name,
+        json_dir = QFileDialog.getExistingDirectory(self)
+        self.json_files = self.get_filenames(json_dir,
                                              extensions=['json'],
                                              recursive_=True, exit_=False)
-        # self.json_files = glob.glob(f"{dir_name}/*.json")
-        # self.img_files.extend(glob.glob(f"{dir_name}/*.png"))
 
         def key(string):
             key_list = []
@@ -112,10 +112,20 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         if not self.json_files:
             return
 
-        dir_name = os.path.dirname(self.json_files[self.json_file_idx])
-        file_root = os.path.splitext(os.path.basename(self.json_files[self.json_file_idx]))[0]
-        img_dir_name = dir_name.replace('Image.json', 'Image.ext')
-        self.img_file = os.path.join(img_dir_name, f"{file_root.replace('VCR.', '')}.jpg")
+        json_dir = os.path.dirname(self.json_files[self.json_file_idx])
+        file_name = os.path.basename(self.json_files[self.json_file_idx])
+
+        img_dir = json_dir.replace('Image.json', 'Image.ext')
+
+        img_files = self.get_filenames(img_dir,
+                                       extensions=IMG_EXTENSIONS,
+                                       recursive_=True, exit_=False)
+
+        for img_file in img_files:
+            if str(os.path.splitext(img_file)[-1]).replace(".", "") in IMG_EXTENSIONS:
+                if os.path.splitext(str(file_name))[0] == os.path.splitext(os.path.basename(img_file))[0]:
+                    self.img_file = img_file
+                    break
 
         if not os.path.exists(self.json_files[self.json_file_idx]):
             cv2_img = cv2.imread(self.img_file)
@@ -135,7 +145,7 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
                     }
                 },
                 "image": {
-                    "file_name": file_root,
+                    "file_name": file_name,
                     "attributes": {
                         "color": 3,
                         "width": cv2_img_width,
@@ -241,12 +251,14 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
             # bbox가 있는 경우
             if 'bboxes' in self.img_json['content'][self.content_type]['annotation']:
                 if self.img_json['content'][self.content_type]['annotation']['bboxes']:
+                    self.img_ids = self.img_json['content'][self.content_type]['annotation']['ids']
                     self.img_names = self.img_json['content'][self.content_type]['annotation']['names']
                     self.img_names_scores = self.img_json['content'][self.content_type]['annotation']['scores']
                     self.img_width = self.img_json['image']['attributes']['width']
                     self.img_height = self.img_json['image']['attributes']['height']
                 else:
                     self.img_json['content'][self.content_type]['annotation']['bboxes'] = []
+                    self.img_ids = []
                     self.img_names = []
                     self.img_names_scores = []
                     self.img_width = self.img_json['image']['attributes']['width']
@@ -267,6 +279,7 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
 
             # Scene 과 같이 bbox 가 없을 때의 처리 방법
             elif self.content_type == 'scene':
+                self.img_ids = self.img_json['content'][self.content_type]['annotation']['ids']
                 self.img_names = self.img_json['content'][self.content_type]['annotation']['names']
                 self.img_names_scores = self.img_json['content'][self.content_type]['annotation']['scores']
                 self.img_width = self.img_json['image']['attributes']['width']
@@ -274,11 +287,19 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
                 self.img_bboxes = []
                 self.img_bbox_idx = 0
 
+                if not self.img_ids:
+                    self.img_ids = []
+                if not self.img_names:
+                    self.img_names = []
+                if not self.img_names_scores:
+                    self.img_names_scores = []
+
                 idx_to_be_removed = []
                 for idx in range(len(self.img_names)):
                     if self.img_names_scores[idx] < 0.3:
                         idx_to_be_removed.append(idx)
 
+                self.img_ids = [i for j, i in enumerate(self.img_ids) if j not in idx_to_be_removed]
                 self.img_names = [i for j, i in enumerate(self.img_names) if j not in idx_to_be_removed]
                 self.img_names_scores = [i for j, i in enumerate(self.img_names_scores) if j not in idx_to_be_removed]
 
@@ -423,8 +444,9 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
 
     def name_dialog_button_action(self):
         try:
-            dialog = NameDialog(self)
-            dialog.exec_()
+            if len(self.img_names) > 0:
+                dialog = NameDialog(self)
+                dialog.exec_()
         except (TypeError, IndexError):
             self.statusLabel.setText("No Box available")
 
@@ -489,7 +511,7 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
         if not self.json_files:
             return
 
-        self.img_names.append("새 장면")
+        self.img_names.append("새 상황")
         self.img_names_scores.append(1.0)
 
         self.update_name_list_ui()
