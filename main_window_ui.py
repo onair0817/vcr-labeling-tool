@@ -142,7 +142,7 @@ class Ui_MainWindow(object):
         self.objectRadioButton.setText(_translate("MainWindow", "물체"))
         self.faceRadioButton.setText(_translate("MainWindow", "얼굴"))
         # self.brandRadioButton.setText(_translate("MainWindow", "브랜드"))
-        self.sceneRadioButton.setText(_translate("MainWindow", "장소"))
+        self.sceneRadioButton.setText(_translate("MainWindow", "상황"))
         # self.landmarkRadioButton.setText(_translate("MainWindow", "랜드마크"))
         self.nameDialogButton.setText(_translate("MainWindow", "이름 수정"))
         self.menuFile.setTitle(_translate("MainWindow", "파일"))
