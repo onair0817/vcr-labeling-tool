@@ -336,9 +336,9 @@ class MainWindow(QMainWindow, main_window_ui.Ui_MainWindow):
 
                 idx_to_be_removed = []
                 for idx in range(len(self.img_names)):
-                    if self.content_type == 'landmark':
+                    if self.content_type == 'landmark' and self.img_names_scores[idx] < 1.0:
                         idx_to_be_removed.append(idx)
-                    elif self.img_names_scores[idx] < 0.7:
+                    elif self.content_type == 'scene' and self.img_names_scores[idx] < 0.7:
                         idx_to_be_removed.append(idx)
 
                 self.img_ids = [i for j, i in enumerate(self.img_ids) if j not in idx_to_be_removed]
