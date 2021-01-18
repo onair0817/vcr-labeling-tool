@@ -29,7 +29,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "이름 수정하기"))
+        Dialog.setWindowTitle(_translate("Dialog", "컨텐츠 정보 수정하기"))
         self.nameFilter.setPlaceholderText(_translate("Dialog", "Filter"))
 
 
