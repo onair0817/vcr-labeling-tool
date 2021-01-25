@@ -95,9 +95,31 @@ class ImageWidget(QtWidgets.QLabel):
                 painter.setPen(QtGui.QPen(Qt.green, 3))
                 painter.setBrush(QtGui.QBrush(Qt.green))
 
-            else:
+            elif self.parent.color_change[i] == 2:
                 painter.setPen(QtGui.QPen(Qt.red, 3))
                 painter.setBrush(QtGui.QBrush(Qt.red))
+
+            # for showing all contents
+            elif self.parent.color_change[i] == 6:
+                painter.setPen(QtGui.QPen(Qt.darkBlue, 3))
+                painter.setBrush(QtGui.QBrush(Qt.darkBlue))
+
+            elif self.parent.color_change[i] == 7:
+                painter.setPen(QtGui.QPen(Qt.darkYellow, 3))
+                painter.setBrush(QtGui.QBrush(Qt.darkYellow))
+
+            elif self.parent.color_change[i] == 8:
+                painter.setPen(QtGui.QPen(Qt.darkMagenta, 3))
+                painter.setBrush(QtGui.QBrush(Qt.darkMagenta))
+
+            elif self.parent.color_change[i] == 9:
+                painter.setPen(QtGui.QPen(Qt.darkCyan, 3))
+                painter.setBrush(QtGui.QBrush(Qt.darkCyan))
+
+            elif self.parent.color_change[i] == 10:
+                painter.setPen(QtGui.QPen(Qt.darkGreen, 3))
+                painter.setBrush(QtGui.QBrush(Qt.darkGreen))
+            # ---
 
             # Draw bounding box
             painter.setBrush(Qt.NoBrush)  # No fill
@@ -112,7 +134,15 @@ class ImageWidget(QtWidgets.QLabel):
 
             # Draw text ID
             scaled = self.img_to_qt(bbox[0])
-            painter.setPen(QtGui.QPen(Qt.black))
+            # painter.setPen(QtGui.QPen(Qt.white))
+            # painter
+            # painter.drawText(scaled.x + 10, scaled.y + 20, str(self.parent.img_names[i]))
+            # painter.setPen(QtGui.QPen(Qt.black))
+
+            painter_path = QtGui.QPainterPath()
+            painter.setRenderHint(QtGui.QPainter.Antialiasing)
+            painter.strokePath(painter_path, QtGui.QPen(QtGui.QColor(0, 0, 0), 20, Qt.SolidLine))
+            painter.fillPath(painter_path, QtGui.QColor(255, 255, 255))
             painter.drawText(scaled.x + 10, scaled.y + 20, str(self.parent.img_names[i]))
 
     def mousePressEvent(self, event):

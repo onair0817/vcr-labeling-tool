@@ -39,7 +39,7 @@ class NameDialog(QDialog, name_dialog_ui.Ui_Dialog):
         """Set img name to current selected item in list."""
         if len(selected.indexes()) > 0:
             self.parent.img_names[self.parent.img_bbox_idx] = self.items[selected.indexes()[0].row()]
-            self.parent.img_names_scores[self.parent.img_bbox_idx] = 1.0
+            self.parent.img_names_scores[self.parent.img_bbox_idx] = 1.2
             self.parent.update_name_list_ui()
 
     def text_changed(self, text):
